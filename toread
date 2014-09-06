@@ -1,5 +1,5 @@
 #!/bin/bash
-usage(){ echo "Usage: ${FUNCNAME[1]} $1" && return 0; }
+function usage(){ echo "Usage: ${FUNCNAME[1]} $1" && return 0; }
 [[ $# -ne 0 && $# -ne 1 && $# -ne 2 ]] && usage "[link] | [open type]" && return 1
 local TOREAD="/home/$USER/links"
 function toreadprint () { 
