@@ -1,0 +1,39 @@
+#!/bin/bash
+[[ $# -ne 0 && $# -ne 1 && $# -ne 2 ]] && usage "[link] | [open type]" && return 1
+local TOREAD="/home/$USER/links"
+function toreadprint () { 
+		count=1;
+		while read line; do
+				printf "[%03d] $line\n" $count
+				count=$((count+1))
+		done < $TOREAD
+}
+
+if [ $# -eq 0 ]; then
+		toreadprint | sort -k2
+		unset toreadprint
+		return 0
+fi
+
+[ $# -eq 1 ] && echo "$1" >> "$TOREAD" && unset toreadprint && return 0
+if [ "$1" == "rm" ]; then
+		re='^[0-9]+$'
+		if ! [[ $2 =~ $re ]] then
+				echo "toread-rm: not a number" && unset toreadprint && return 0
+		fi
+		sed "$2d" $TOREAD &>"$TOREAD.tmp"
+		mv "$TOREAD.tmp" "$TOREAD"
+		unset toreadprint && return 0
+fi
+
+[ "$1" == "show" ] && cat "$TOREAD" | grep --color=auto "$2:" && unset toreadprint && return 0
+
+if [ "$1" == "nopen" ]; then
+		local NRREAD=`sed "${2}q;d" $TOREAD | awk '{print $2}'`
+		google-chrome "$NRREAD" &>/dev/null & unset toreadprint && return 0
+fi
+[ "$1" != "open" ] && echo "nope" && unset toreadprint && return 0
+
+local URLSTOREAD=$(cat $TOREAD | grep "$2:" | awk '{print $2}')
+for link in $URLSTOREAD; do google-chrome "$link" &>/dev/null & done
+unset toreadprint && return 0
